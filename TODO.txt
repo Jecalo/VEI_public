@@ -1,0 +1,68 @@
+-Improve normals
+	-Create world space normal shader to visualize quality of flat shading and generated surface normals
+	-Can normals be entirely removed? Does it even improve performance?
+-Moss/Vines generation over stone
+-Change material 0 to always empty?
+-Noise abstraction layer for easy terrain generation.
+	-Pool arrays for 2d noise in map generation
+-Attempting to autofill "f" to "fillchunk" throws an error in the console
+-Implement kernel application to another kernel
+-Implement speck kernel
+-Spherical explosion expansion
+-Profile chunk resolution while keeping the same voxel distance and total amount of voxels
+	-Try 64^3 chunks
+	-Profile reduced caching of variables (calculate edges instead of a lookup table, remove stepXY and replace with step*step...)
+	-Reorder operations on the SurfaceNets algorithm for better cache? (load the mask in memory consecutive order: -z -> +z, -y -> +y, -x -> +x)
+	-Does changing the SDF values in chunks from floats to fixed size shorts improve performance?
+-Cull chunks that are underground manually. https://tomcc.github.io/2014/08/31/visibility-1.html
+-Effects/explosions that apply a crack kernel over the ground
+-Change VoxelGrid Regenerate method so that it only attempts to regenerate as many chunks as threads at the same time, so that it does not hog all RAM when generating a massive map.
+	-Add an option to generate chunks passively, updating them as they finish. It must not block main thread.
+-Assemblies for independent scripts (VoxelTerrain, Gizmo, Console)
+-Remove null checking from updates.
+-Strip debug logging from standalone non developmente builds.
+-Split kernel application job into different jobs optimized for one set of KernelMode.
+
+
+MIGHTDO:
+-Use function bounds to speed up generation on fully filled chunks (somehow check if a chunk will be fully air before generating each individual voxel, and instead fill it without per voxel noise generation)
+-The surfaceNets algorithm could be rewritten to mesh one chunk with all threads at the same time, possibly reducing cache limits.
+	-Calculate all verts in parallel, while each thread stores the indices of each vertex that has finished a quad.
+	-Join the lists of indices, order them by material id.
+	-Preallocate enough memory for the finished mesh quads. Split the list of quads to be made for each thread.
+-Change meshing algorithm to tris for faster unity mesh processing?
+-Gizmo:
+	-Use vertex positions in a buffer for the line rendering (instead of a line mesh)
+	-Improve width in wireframe feature and fix transparency in the wireframe.
+	-Add intermediate job for turning solid gizmos into triangles before rendering
+	-Add alternative drawing methods for seethrough gizmos (secondary list of Props that is drawn with a different material)
+	-Make an option to only refresh gizmos in fixedUpdates.
+	-Add an argument to gizmo drawing functions for marking them as persistent. Persistent gizmos should be stored and drawn each frame until a ClearStored() method is called.
+-Create curve, cone, and other KernelBuilder primitives.
+-Add tiling to noise
+-Fix alternative noise implementations and profile them
+-Debug console:
+	-Is disabling the entire debug canvas better than hiding the console?
+	-Make sure all methods for console commands are proper (no non-static or private...)
+	-Option to log timestamp for all messages
+
+
+NOTDO:
+-Pool small native containers in the surface nets algorithm?
+-Grid regeneration job interleaving: queue all parts of regeneration for each different grid at the same time (all sn, then all meshing, then all physics...)?
+-Terrain update queue across multiple frames?
+-Can you reuse internal mesh buffers while using jobified mesh creation?
+-More efficient way of getting readonly mesh data nativearrays than GetVertices?
+-Disable empty chunks and remove unnecessary changes (like setting the collider to null or the amount of materials to 0) (cannot update collider mesh while disabled bug???).
+	-Check if collider sharedmesh must be replaced on each regeneration (bug).
+-Tree generation:
+	-Make the Gizmo shape from the ending points instead of the algorithm's output
+	-Make sure not all fronts converge on the target point
+	-Slowly displace the target?
+	-Improve heuristic for valid/invalid front merges
+	-Make sure the randomness applied when extending a front does not leave the final point going backwards
+	-Add a thickness parameter, and increase it with some function when a branch merges into another
+-Pathfinding & AI:
+	-Precalculate things:
+		Precalculate maximum agent size
+	-Add extra data to nodes for extra steps (jumping paths, grounded only, climber...)
